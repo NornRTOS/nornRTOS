@@ -6,5 +6,5 @@ that does not fit the 128 KB of IRAM runs from flash through the cache. Port in
 modules/nornCore/port/xtensa, board HAL in modules/nornCore/hal/xtensa, linker scripts in
 modules/nornCore/port/xtensa/*.ld. Toolchain: Espressif xtensa-esp-elf (XTENSA_ROOT) and
 esptool in a Python (ESP_PYTHON); Espressif's QEMU (QEMU_ESP) runs every example but
-wifi. Profiles: small, default, large; nornNET on all three, nornWIFI on default and
-large.
+wifi. nornWIFI needs RTOS_CFG_HEAP 1, RTOS_CFG_EVGROUPS 1 and RTOS_CFG_EVT_BITS 32 in
+the application's rtos_config.h (examples/wifi).

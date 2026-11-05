@@ -1,9 +1,8 @@
 /**
  * @file net_ping.c
- * nornNET from the SDK: register the loopback and the open_eth device (QEMU), give the
- * interface an address on QEMU's user mode network, ping its gateway twenty times and
- * our own loopback once, print the result. Everything comes from the profile libraries:
- * the kernel and the stack were not compiled here.
+ * nornNET: register the loopback and the open_eth device (QEMU), give the interface an
+ * address on QEMU's user mode network, ping its gateway twenty times and our own
+ * loopback once, print the result.
  */
 
 #include "rtos.h"
@@ -77,6 +76,18 @@ void rtos_assertFailed(const char *file, uint16_t line)
     (void)rtos_port_enterCritical();
     uart_puts("\r\nASSERTION FAILED: "); uart_putsP(file); uart_puts(", line "); uart_putU32(line); uart_puts("\r\n");
     rtos_port_halt();
+}
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
 }
 
 int main(void)

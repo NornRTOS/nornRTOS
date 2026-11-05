@@ -1,5 +1,5 @@
 # nornNET over the open_eth MAC: pings QEMU's gateway (QEMU only).
-# Source build from the nornRTOS directory: make APP=net BOARD=... PROFILE=... [sim|upload]
+# From the nornRTOS directory: make APP=net BOARD=... [sim|upload]
 BOARD ?= esp32
 ONLY_BOARDS = esp32
 MODULES += $(NORN_RTOS)/modules/nornNET/nornnet.mk

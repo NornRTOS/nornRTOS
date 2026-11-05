@@ -1,7 +1,7 @@
 /**
  * @file bench_bench.c
- * nornCore's tc10 built the SDK way (the TCB size line left out: it needs a kernel
- * internal header): the kernel library's cost in CPU cycles on the current board, measured with the
+ * nornCore's tc10 as a nornRTOS example (the TCB size line left out: it needs a kernel
+ * internal header): the kernel's cost in CPU cycles on the current board, measured with the
  * cycle counter of hal/<arch>/board.h (a free running timer at F_CPU on the Mega, CCOUNT
  * on the ESP32) and a probe interrupt at PROBE_HZ, which is not a multiple of the tick so
  * that its phase sweeps the tick period.
@@ -63,8 +63,8 @@
 #define API_ITERS       64u
 #define WAKE_ROUNDS     1000u   /* probes measured with the semaphore before the notification */
 
-#ifndef SDK04_STOP_AFTER_MS
-# define SDK04_STOP_AFTER_MS  3000ul
+#ifndef BENCH_STOP_AFTER_MS
+# define BENCH_STOP_AFTER_MS  3000ul
 #endif
 
 #define STACK_SIZE      RTOS_STACK_DEFAULT
@@ -436,8 +436,8 @@ static void taskLow(void *arg)
     for(;;)
     {
         rtos_delay(RTOS_MS(100));
-#if SDK04_STOP_AFTER_MS > 0
-        if(rtos_getTick() >= RTOS_MS(SDK04_STOP_AFTER_MS))
+#if BENCH_STOP_AFTER_MS > 0
+        if(rtos_getTick() >= RTOS_MS(BENCH_STOP_AFTER_MS))
             report();
 #endif
     }
@@ -455,6 +455,18 @@ void rtos_assertFailed(const char *file, uint16_t line)
     rtos_port_halt();
 }
 
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
+}
 
 int main(void)
 {

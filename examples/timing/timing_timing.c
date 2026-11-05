@@ -1,7 +1,7 @@
 /**
  * @file timing_timing.c
- * nornCore's tc04 built the SDK way: the timing figures of the kernel library on the
- * current board, measured with the public API only.
+ * nornCore's tc04 as a nornRTOS example: the timing figures of the kernel on the current
+ * board, measured with the public API only.
  *
  *   switch      a low priority task gives a semaphore a high priority task waits on, the
  *               high task takes it again at once: one round trip is two context switches
@@ -13,7 +13,7 @@
  *               how late it wakes relative to the ideal grid. Average and max in us.
  *
  * All three run at the same time, so the max values include the interference between
- * them, which is what matters. Printed once after SDK03_STOP_AFTER_MS, with generous
+ * them, which is what matters. Printed once after TIMING_STOP_AFTER_MS, with generous
  * limits as PASS criteria; the numbers themselves go into the README per board.
  */
 
@@ -39,8 +39,8 @@
 #define SWITCH_ROUNDS   1000u
 #define PERIOD_MS       10u
 
-#ifndef SDK03_STOP_AFTER_MS
-# define SDK03_STOP_AFTER_MS  3000ul
+#ifndef TIMING_STOP_AFTER_MS
+# define TIMING_STOP_AFTER_MS  3000ul
 #endif
 
 #define STACK_SIZE      RTOS_STACK_DEFAULT
@@ -208,8 +208,8 @@ static void taskLow(void *arg)
     for(;;)
     {
         rtos_delay(RTOS_MS(100));
-#if SDK03_STOP_AFTER_MS > 0
-        if(rtos_getTick() >= RTOS_MS(SDK03_STOP_AFTER_MS))
+#if TIMING_STOP_AFTER_MS > 0
+        if(rtos_getTick() >= RTOS_MS(TIMING_STOP_AFTER_MS))
             report();
 #endif
     }
@@ -227,6 +227,18 @@ void rtos_assertFailed(const char *file, uint16_t line)
     rtos_port_halt();
 }
 
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
+}
 
 int main(void)
 {

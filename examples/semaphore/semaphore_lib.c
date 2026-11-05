@@ -1,11 +1,8 @@
 /**
  * @file semaphore_lib.c
- * An application built against the kernel library of a configuration profile, as a user
- * of the binary SDK builds: no rtos_config.h of its own (app.mk: PROFILE, USE_LIB), the
- * hooks overridden as functions, the stack sizes from the profile's constants. Two tasks
- * and a software timer; checks that the library's configuration is the one it was
- * compiled against (rtos_init would otherwise panic), that the idle hook and the stack
- * monitor hook are the ones defined here, and that the primitives work.
+ * Two tasks and a software timer, the hooks defined as functions (rtos_idleHook,
+ * rtos_stackWarnHook, rtos_panicHook), the stack sizes from the port's constants; checks
+ * that the idle hook is the one defined here and that the primitives work.
  */
 
 #include "rtos.h"
@@ -16,8 +13,8 @@
 #define TASK_WORK   2
 #define TASK_PACE   1
 
-#ifndef SDK01_STOP_AFTER_MS
-# define SDK01_STOP_AFTER_MS  2000ul
+#ifndef SEMAPHORE_STOP_AFTER_MS
+# define SEMAPHORE_STOP_AFTER_MS  2000ul
 #endif
 
 static uint8_t _stackWork[RTOS_STACK_DEFAULT];
@@ -75,7 +72,7 @@ static void taskPace(void *arg)
         (void)rtos_waitPeriodic(RTOS_MS(20));
         ++ _paces;
         rtos_semGive(&_sem);
-        if(rtos_getTick() >= RTOS_MS(SDK01_STOP_AFTER_MS))
+        if(rtos_getTick() >= RTOS_MS(SEMAPHORE_STOP_AFTER_MS))
         {
             uart_puts("semaphore " BOARD_NAME ": signature 0x");
             {
@@ -92,10 +89,10 @@ static void taskPace(void *arg)
             uart_puts(" notified "); uart_putU32(_notified);
             uart_puts("\r\n");
             tc_expectRange("idleLoops", _idleLoops, 1, 0xFFFFFFFFul);
-            tc_expectNear("timerFires", _timerFires, SDK01_STOP_AFTER_MS / 10ul);
-            tc_expectNear("paces", _paces, SDK01_STOP_AFTER_MS / 20ul);
-            tc_expectNear("works", _works, SDK01_STOP_AFTER_MS / 20ul);
-            tc_expectNear("notified", _notified, SDK01_STOP_AFTER_MS / 10ul);
+            tc_expectNear("timerFires", _timerFires, SEMAPHORE_STOP_AFTER_MS / 10ul);
+            tc_expectNear("paces", _paces, SEMAPHORE_STOP_AFTER_MS / 20ul);
+            tc_expectNear("works", _works, SEMAPHORE_STOP_AFTER_MS / 20ul);
+            tc_expectNear("notified", _notified, SEMAPHORE_STOP_AFTER_MS / 10ul);
             tc_finish("semaphore");
         }
     }

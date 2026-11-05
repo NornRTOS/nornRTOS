@@ -1,13 +1,13 @@
 /**
  * @file basics_basics.c
- * nornCore's tc01 built the SDK way (profile library, no rtos_config.h, the idle hook as a
- * function): every primitive of the first step on real hardware or in a simulator.
+ * nornCore's tc01 as a nornRTOS example (the idle hook as a function): every primitive of
+ * the first step on real hardware or in a simulator.
  *
  *   task 3 "periodic":  runs every 10 ms (rtos_waitPeriodic), toggles the LED on PB7,
  *                       updates a shared counter under a ceiling mutex and once a second
  *                       posts an event to the worker.
  *   task 2 "worker":    waits for the event with a timeout, prints a status line over
- *                       UART0 and stops the test after SDK02_STOP_AFTER_MS.
+ *                       UART0 and stops the test after BASICS_STOP_AFTER_MS.
  *   task 1 "isrConsumer": blocks on a semaphore that an application interrupt (timer 4
  *                       compare at 500 Hz) gives from inside an RTOS_ISR.
  *   idle:               counts its loops and sleeps.
@@ -42,8 +42,8 @@ static const gpio_pin_t _pinLed = BOARD_PIN_LED;
 
 /** Stop the test (halt the CPU, which ends a simavr run) after this time. 0 runs forever,
     which is what you want on real hardware. */
-#ifndef SDK02_STOP_AFTER_MS
-# define SDK02_STOP_AFTER_MS  3000ul
+#ifndef BASICS_STOP_AFTER_MS
+# define BASICS_STOP_AFTER_MS  3000ul
 #endif
 
 #define STACK_SIZE           RTOS_STACK_DEFAULT      /* 1024 on the ESP32, 192 on the AVR */
@@ -161,11 +161,11 @@ static void printStatus(void)
 }
 
 
-/** Expected after SDK02_STOP_AFTER_MS: 100 periodic wakes and 500 ISR events per second,
+/** Expected after BASICS_STOP_AFTER_MS: 100 periodic wakes and 500 ISR events per second,
     no semaphore timeouts, no overruns, time base within 0.5 percent, stacks intact. */
 static void finish(void)
 {
-    const uint32_t ms = SDK02_STOP_AFTER_MS;
+    const uint32_t ms = BASICS_STOP_AFTER_MS;
     const uint32_t us = rtos_getTimeUs();
 
     rtos_mutexLock(&_mutexShared);
@@ -195,8 +195,8 @@ static void taskWorker(void *arg)
         else
             printStatus();
 
-#if SDK02_STOP_AFTER_MS > 0
-        if(rtos_getTick() >= RTOS_MS(SDK02_STOP_AFTER_MS))
+#if BASICS_STOP_AFTER_MS > 0
+        if(rtos_getTick() >= RTOS_MS(BASICS_STOP_AFTER_MS))
             finish();
 #endif
     }
@@ -215,6 +215,18 @@ void rtos_assertFailed(const char *file, uint16_t line)
     rtos_port_halt();
 }
 
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
+}
 
 int main(void)
 {

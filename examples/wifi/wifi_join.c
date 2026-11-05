@@ -1,9 +1,8 @@
 /**
  * @file wifi_join.c
- * nornWIFI from the SDK: start the radio, join the access point named in nw_secrets.h,
- * take an address by DHCP over nornNET, ping the gateway twenty times and report. The
- * kernel, the stack, the adapter, the supplicant and Espressif's radio libraries all come
- * from the SDK; the task priorities of the modules come from the profile's map.
+ * nornWIFI: start the radio, join the access point named in nw_secrets.h, take an
+ * address by DHCP over nornNET, ping the gateway twenty times and report. The task
+ * priorities of the modules are in nn_config.h and rtos_config.h here.
  */
 
 #include "rtos.h"
@@ -126,6 +125,18 @@ void rtos_assertFailed(const char *file, uint16_t line)
     (void)rtos_port_enterCritical();
     uart_puts("\r\nASSERTION FAILED: "); uart_putsP(file); uart_puts(", line "); uart_putU32(line); uart_puts("\r\n");
     rtos_port_halt();
+}
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
 }
 
 int main(void)

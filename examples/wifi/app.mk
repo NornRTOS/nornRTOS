@@ -1,5 +1,5 @@
 # nornWIFI: join the access point of nw_secrets.h, DHCP, ping the gateway (board only).
-# Source build from the nornRTOS directory: make APP=wifi BOARD=... PROFILE=... [sim|upload]
+# From the nornRTOS directory: make APP=wifi BOARD=... [sim|upload]
 BOARD ?= esp32
 ONLY_BOARDS = esp32
 NW_BOARD_ONLY = 1

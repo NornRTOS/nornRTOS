@@ -2,8 +2,7 @@
  * @file hello.c
  * The smallest nornRTOS application: one task that prints a line once a second and
  * toggles the board's LED, the idle hook counting idle loops. Build it from the nornRTOS
- * directory (make APP=hello BOARD=esp32 sim) or against the binary SDK (make in
- * examples/hello of the SDK).
+ * directory: make APP=hello BOARD=esp32 sim.
  */
 
 #include "rtos.h"
@@ -34,6 +33,18 @@ static void task(void *arg)
         uart_putU32(_idleLoops);
         uart_puts("\r\n");
     }
+}
+
+/** The panic hook as every application should have one: say what happened before the
+    halt (the kernel's default is silent). */
+void rtos_panicHook(const rtos_panicInfo_t *pInfo)
+{
+    uart_puts("\r\nPANIC reason "); uart_putU32(pInfo->reason);
+    uart_puts(" task "); uart_putU32(pInfo->task);
+    uart_puts(" arg1 "); uart_putU32(pInfo->arg1);
+    uart_puts(" arg2 "); uart_putU32(pInfo->arg2);
+    uart_puts(" (reason 6 = built against another configuration than the kernel)\r\n");
+    uart_flush();
 }
 
 int main(void)
