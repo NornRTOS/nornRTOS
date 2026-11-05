@@ -1,0 +1,13 @@
+# The modules of nornRTOS as git submodules of this repository. Until the module
+# repositories exist in the organisation the directories under modules/ are plain
+# checkouts; tools/submodules.sh registers them with these URLs (git submodule add on an
+# existing checkout keeps it).
+[submodule "modules/nornCore"]
+	path = modules/nornCore
+	url = git@github.com:NornRTOS/nornCore.git
+[submodule "modules/nornNET"]
+	path = modules/nornNET
+	url = git@github.com:NornRTOS/nornNET.git
+[submodule "modules/nornWIFI"]
+	path = modules/nornWIFI
+	url = git@github.com:NornRTOS/nornWIFI.git
