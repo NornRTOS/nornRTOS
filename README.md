@@ -3,7 +3,10 @@
 nornRTOS is a real time operating system for small microcontrollers: a kernel
 (nornCore), a TCP/IP stack (nornNET), the ESP32's WiFi radio without ESP-IDF or FreeRTOS
 (nornWIFI), and more modules to come. This repository is the tree that holds them
-together: the modules as git submodules, the boards, the examples and the tools.
+together: the modules as git submodules, the boards, the examples and the tools. The
+user documentation (the kernel's design, porting, the generated API reference) is its
+own repository, nornDocs (https://github.com/NornRTOS/nornDocs); each repository here
+keeps its README and the documents of its own development.
 
     modules/        nornCore, nornNET, nornWIFI (submodules; see .gitmodules and tools/submodules.sh)
     boards/         what each board is and what it has (esp32, avr: mega2560 and uno)
@@ -23,8 +26,8 @@ together: the modules as git submodules, the boards, the examples and the tools.
     make APP=myapp APPDIR=/path/to/myapp               an application kept elsewhere
 
 An application is a directory with its sources, an app.mk (BOARD, MODULES, what runs
-from flash) and its own rtos_config.h (copy one of modules/nornCore/config/profiles/
-small, default or large, or start from config/rtos_config.template.h),
+from flash) and its own rtos_config.h (start from modules/nornCore/config/rtos_config.template.h;
+the nornCore README has three measured sets of values to begin with),
 plus nn_config.h and nw_config.h for the modules it uses: the kernel and the modules are
 compiled from source with exactly that configuration, as the examples are. The build is
 nornCore's Makefile with this tree passed in; PORT, EXTRA_CFLAGS, SIM_SECONDS and

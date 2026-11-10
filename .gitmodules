@@ -11,3 +11,6 @@
 [submodule "modules/nornWIFI"]
 	path = modules/nornWIFI
 	url = git@github.com:NornRTOS/nornWIFI.git
+[submodule "modules/nornHTTP"]
+	path = modules/nornHTTP
+	url = git@github.com:NornRTOS/nornHTTP.git
