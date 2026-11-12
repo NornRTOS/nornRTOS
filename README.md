@@ -2,17 +2,21 @@
 
 nornRTOS is a real time operating system for small microcontrollers: a kernel
 (nornCore), a TCP/IP stack (nornNET), the ESP32's WiFi radio without ESP-IDF or FreeRTOS
-(nornWIFI), and more modules to come. This repository is the tree that holds them
+(nornWIFI), an HTTP client (nornHTTP), a shell (nornSHELL) and a configuration store
+(nornStore). Every module but the kernel is optional: an application that does not
+enable one gets a kernel identical to the byte and no code of it (tools/size_check.sh). This repository is the tree that holds them
 together: the modules as git submodules, the boards, the examples and the tools. The
 user documentation (the kernel's design, porting, the generated API reference) is its
 own repository, nornDocs (https://github.com/NornRTOS/nornDocs); each repository here
 keeps its README and the documents of its own development.
 
-    modules/        nornCore, nornNET, nornWIFI (submodules; see .gitmodules and tools/submodules.sh)
+    modules/        nornCore, nornNET, nornWIFI, nornHTTP, nornSHELL, nornStore (submodules;
+                    see .gitmodules and tools/submodules.sh)
     boards/         what each board is and what it has (esp32, avr: mega2560 and uno)
-    examples/       hello, semaphore, basics, timing, bench, net, wifi: applications built
-                    from the module sources, each with its own configuration
-    tools/          submodules.sh, monitor.py, qemu_run.py, bin2c.py
+    examples/       hello, semaphore, basics, timing, bench, net, wifi, wifi_http, shell,
+                    store, device: applications built from the module sources, each with
+                    its own configuration; device uses every module at once
+    tools/          submodules.sh, size_check.sh, monitor.py, qemu_run.py, bin2c.py
     LICENSE.md      Business Source License 1.1 with Tenforward AB's Additional Use Grant
     THIRD_PARTY_LICENSES.md
 

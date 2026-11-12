@@ -7,7 +7,7 @@
 #   git clone --recurse-submodules git@github.com:NornRTOS/nornRTOS.git
 set -eu
 cd "$(dirname "$0")/.."
-for m in nornCore nornNET nornWIFI nornHTTP; do
+for m in nornCore nornNET nornWIFI nornHTTP nornSHELL nornStore; do
     url=$(git config -f .gitmodules submodule.modules/$m.url)
     if git ls-files --stage modules/$m | grep -q '^160000 '; then
         echo "modules/$m already registered"

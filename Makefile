@@ -35,4 +35,4 @@ test:
 	$(MAKE) --no-print-directory -C $(CORE) test-all
 
 clean:
-	rm -rf build $(CORE)/build modules/nornNET/build modules/nornWIFI/build examples/*/build
+	rm -rf build $(CORE)/build modules/nornNET/build modules/nornWIFI/build modules/nornSHELL/build modules/nornStore/build examples/*/build

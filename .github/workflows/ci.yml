@@ -1,0 +1,64 @@
+# nornRTOS tree: the modules together. nornCore's own CI runs the kernel suite; this one
+# builds the examples that combine the modules, runs the module host tests, checks the
+# size contract (a kernel untouched by a module that is not enabled) and talks to nosh
+# in QEMU.
+name: ci
+on: [push, pull_request]
+
+jobs:
+  avr-and-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install AVR toolchain and simavr
+        run: sudo apt-get update && sudo apt-get install -y gcc-avr avr-libc simavr python3-serial
+      - name: nosh host test, analysis
+        run: make -C modules/nornSHELL host-test analyze
+      - name: nornStore host tests, analysis
+        run: make -C modules/nornStore host-test analyze
+      - name: Size contract, AVR boards
+        run: BOARDS="uno mega2560" tools/size_check.sh
+
+  esp32:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Cache toolchains
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/dev/tools
+          key: esp-tools-xtensa-16.1.0-qemu-9.2.2
+      - name: Install Xtensa toolchain, QEMU and esptool
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/dev/tools && cd ~/dev/tools
+          curl -sSL -o x.tar.xz https://github.com/espressif/crosstool-NG/releases/download/esp-16.1.0_20260609/xtensa-esp-elf-16.1.0_20260609-x86_64-linux-gnu.tar.xz
+          mkdir xtensa-esp-elf-16.1.0 && tar -xJf x.tar.xz -C xtensa-esp-elf-16.1.0 --strip-components=1 && rm x.tar.xz
+          curl -sSL -o q.tar.xz https://github.com/espressif/qemu/releases/download/esp-develop-9.2.2-20260417/qemu-xtensa-softmmu-esp_develop_9.2.2_20260417-x86_64-linux-gnu.tar.xz
+          mkdir qemu-esp && tar -xJf q.tar.xz -C qemu-esp --strip-components=1 && rm q.tar.xz
+          python3 -m venv esp-venv && esp-venv/bin/pip install -q esptool
+      - name: Size contract, ESP32
+        run: BOARDS="esp32" tools/size_check.sh
+      - name: nosh in QEMU
+        run: |
+          make -s APP=shell BOARD=esp32
+          ~/dev/tools/esp-venv/bin/python modules/nornSHELL/tools/qemu_talk.py \
+            modules/nornCore/build/shell-esp32/nornos_shell.bin \
+            --expect "help      list the commands" --expect "nosh: foo: not found" \
+            --send help --send foo
+      - name: nornStore in QEMU, a configuration across a reboot
+        run: |
+          make -s APP=store BOARD=esp32
+          T=modules/nornSHELL/tools/qemu_talk.py; B=modules/nornCore/build/store-esp32/nornos_store.bin
+          rm -f build/store.flash; mkdir -p build
+          ~/dev/tools/esp-venv/bin/python $T $B --flash build/store.flash \
+            --expect "saved, seq 2 in block 1" \
+            --send "config set network.ip 10.0.0.5" --send "config save"
+          ~/dev/tools/esp-venv/bin/python $T $B --flash build/store.flash \
+            --expect "store: image seq 2 in block 1" --expect "network.ip        ip4  10.0.0.5" \
+            --send config

@@ -14,3 +14,9 @@
 [submodule "modules/nornHTTP"]
 	path = modules/nornHTTP
 	url = git@github.com:NornRTOS/nornHTTP.git
+[submodule "modules/nornSHELL"]
+	path = modules/nornSHELL
+	url = git@github.com:NornRTOS/nornSHELL.git
+[submodule "modules/nornStore"]
+	path = modules/nornStore
+	url = git@github.com:NornRTOS/nornStore.git
