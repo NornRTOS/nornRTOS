@@ -1,0 +1,4 @@
+build/
+*.map
+examples/wifi/nw_secrets.h
+examples/*/nw_secrets.h
